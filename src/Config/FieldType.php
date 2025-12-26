@@ -1,0 +1,48 @@
+<?php
+
+declare(strict_types=1);
+
+namespace On1kel\NestedSet\Config;
+
+use On1kel\NestedSet\Exceptions\Exception;
+
+enum FieldType: string
+{
+    case UnsignedSmallInteger  = 'unsignedSmallInteger';
+    case UnsignedMediumInteger = 'unsignedMediumInteger';
+    case UnsignedBigInteger    = 'unsignedBigInteger';
+    case UnsignedInteger       = 'unsignedInteger';
+
+    case UUID = 'uuid';
+    case ULID = 'ulid';
+
+    public function isInteger(): bool
+    {
+        return $this === self::UnsignedSmallInteger ||
+            $this === self::UnsignedMediumInteger ||
+            $this === self::UnsignedBigInteger ||
+            $this === self::UnsignedInteger;
+    }
+
+    public static function fromString(string $value): self
+    {
+        return match (true) {
+            $value === 'int' => self::UnsignedInteger,
+            $value === 'integer' => self::UnsignedInteger,
+            $value === 'uuid' => self::UUID,
+            $value === 'ulid' => self::ULID,
+            $value === 'string' => self::UUID,
+            default => throw new Exception("Invalid type: $value"),
+        };
+    }
+
+    public function toModelCast(): string
+    {
+        return match (true) {
+            $this->isInteger() => 'integer',
+            $this === self::UUID => 'string',
+            $this === self::ULID => 'string',
+            default => 'string',
+        };
+    }
+}
