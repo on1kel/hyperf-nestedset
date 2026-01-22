@@ -29,9 +29,34 @@ final readonly class Migrate
         }
 
         $builder = $instance->getTreeBuilder();
+        
+        // Auto-detect parent_id type based on model's primary key type
+        static::adjustParentTypeFromModel($builder, $instance);
+        
         (new self($builder, $table))->buildColumns($excludeTreeCol);
 
         return $builder;
+    }
+
+    /**
+     * Adjust parent_id type to match the model's primary key type
+     */
+    protected static function adjustParentTypeFromModel(Builder $builder, Model $model): void
+    {
+        $keyType = $model->getKeyType();
+        $parentAttribute = $builder->parent();
+        
+        // Determine the appropriate field type based on key type
+        $fieldType = match ($keyType) {
+            'string' => \On1kel\NestedSet\Config\FieldType::UUID,
+            'int', 'integer' => \On1kel\NestedSet\Config\FieldType::UnsignedBigInteger,
+            default => $parentAttribute->type(),
+        };
+        
+        // Update parent attribute type if needed
+        if ($parentAttribute->type() !== $fieldType) {
+            $parentAttribute->setType($fieldType);
+        }
     }
 
     /**

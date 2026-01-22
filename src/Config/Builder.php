@@ -163,7 +163,7 @@ class Builder
 
     public function columnIndexes(): array
     {
-        return [
+        $indexes = [
             (string)$this->right  => (string)$this->right,
             (string)$this->parent => (string)$this->parent,
             (string)$this->left   => [
@@ -171,6 +171,13 @@ class Builder
                 (string)$this->right,
             ],
         ];
+
+        // Add tree_id index for multi-tree structures
+        if ($this->isMulti()) {
+            $indexes[(string)$this->tree] = (string)$this->tree;
+        }
+
+        return $indexes;
     }
 
     public function build(Model $model): Config
