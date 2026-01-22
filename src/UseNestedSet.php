@@ -5,6 +5,15 @@ declare(strict_types=1);
 namespace On1kel\NestedSet;
 
 use Closure;
+use Hyperf\Database\Model\Events\Creating;
+use Hyperf\Database\Model\Events\Created;
+use Hyperf\Database\Model\Events\Updating;
+use Hyperf\Database\Model\Events\Updated;
+use Hyperf\Database\Model\Events\Saving;
+use Hyperf\Database\Model\Events\Deleting;
+use Hyperf\Database\Model\Events\Deleted;
+use Hyperf\Database\Model\Events\Restoring;
+use Hyperf\Database\Model\Events\Restored;
 use Hyperf\Database\Model\Model;
 use Hyperf\Database\Query\Expression;
 use On1kel\NestedSet\Config\Helper;
@@ -37,76 +46,53 @@ trait UseNestedSet
 
     protected bool $forceSave = false;
 
-    public static function bootUseNestedSet(): void
+    public function creating(Creating $event): void
     {
-        static::creating(
-            static function ($model) {
-                /** @var static $model */
-                $model->beforeInsert();
-            }
-        );
+        $this->beforeInsert();
+    }
 
-        static::created(
-            static function ($model) {
-                /** @var static $model */
-                $model->afterInsert();
-            }
-        );
+    public function created(Created $event): void
+    {
+        $this->afterInsert();
+    }
 
-        static::updating(
-            static function ($model) {
-                /** @var static $model */
-                $model->beforeUpdate();
-            }
-        );
+    public function updating(Updating $event): void
+    {
+        $this->beforeUpdate();
+    }
 
-        static::updated(
-            static function ($model) {
-                /** @var static $model */
-                $model->afterUpdate();
-            }
-        );
+    public function updated(Updated $event): void
+    {
+        $this->afterUpdate();
+    }
 
-        static::saving(
-            static function ($model) {
-                /** @var static $model */
-                $model->beforeSave();
-            }
-        );
+    public function saving(Saving $event): void
+    {
+        $this->beforeSave();
+    }
 
-        static::deleting(
-            static function ($model) {
-                /** @var static $model */
-                $model->beforeDelete();
-            }
-        );
+    public function deleting(Deleting $event): void
+    {
+        $this->beforeDelete();
+    }
 
-        static::deleted(
-            static function ($model) {
-                /** @var static $model */
-                if ($model->isSoftDelete() && !$model->isForceDeleting()) {
-                    return;
-                }
-
-                $model->afterDelete();
-            }
-        );
-
-        if (Helper::isModelSoftDeletable(static::class)) {
-            static::restoring(
-                static function (Model $model) {
-                    /** @var static $model */
-                    $model->beforeRestore();
-                }
-            );
-
-            static::restored(
-                static function (Model $model) {
-                    /** @var static $model */
-                    $model->afterRestore();
-                }
-            );
+    public function deleted(Deleted $event): void
+    {
+        if ($this->isSoftDelete() && !$this->isForceDeleting()) {
+            return;
         }
+
+        $this->afterDelete();
+    }
+
+    public function restoring(Restoring $event): void
+    {
+        $this->beforeRestore();
+    }
+
+    public function restored(Restored $event): void
+    {
+        $this->afterRestore();
     }
 
     public function beforeInsert(): void
