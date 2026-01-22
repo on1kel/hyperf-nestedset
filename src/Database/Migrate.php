@@ -100,8 +100,11 @@ final readonly class Migrate
      */
     private function createIndex(string $indexName, array $columns): void
     {
-        if ($this->builder->isMulti()) {
-            array_unshift($columns, $this->builder->tree()->columnName());
+        $treeColumnName = $this->builder->tree()?->columnName();
+        
+        // Add tree_id prefix only if it's multi-tree and tree_id is not already in columns
+        if ($this->builder->isMulti() && !in_array($treeColumnName, $columns, true)) {
+            array_unshift($columns, $treeColumnName);
         }
 
         $indexFullName = $this->table->getTable() . "_{$indexName}_idx";
