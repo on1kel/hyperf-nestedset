@@ -80,7 +80,8 @@ final readonly class Migrate
 
             $this->table->{$attribute->type()->value}($attribute->columnName())
                 ->default($attribute->default())
-                ->nullable($attribute->nullable());
+                ->nullable($attribute->nullable())
+                ->comment($attribute->name()->comment());
         }
     }
 
