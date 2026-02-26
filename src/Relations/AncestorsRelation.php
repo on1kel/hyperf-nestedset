@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace On1kel\NestedSet\Relations;
 
 use Hyperf\Database\Model\Model;
+use Hyperf\Database\Model\Relations\Constraint;
 use On1kel\NestedSet\QueryBuilder as NestedSetQueryBuilder;
 use On1kel\NestedSet\UseNestedSet;
 
@@ -18,7 +19,7 @@ class AncestorsRelation extends BaseRelation
      */
     public function addConstraints(): void
     {
-        if (!static::$constraints) {
+        if (!Constraint::isConstraint()) {
             return;
         }
 
