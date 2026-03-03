@@ -46,6 +46,14 @@ trait UseNestedSet
 
     protected bool $forceSave = false;
 
+    /**
+     * Quote a column name for use in raw SQL expressions (handles reserved words like 'left', 'right').
+     */
+    protected function quoteCol(string $column): string
+    {
+        return '"' . $column . '"';
+    }
+
     public function creating(Creating $event): void
     {
         $this->beforeInsert();
@@ -675,7 +683,7 @@ trait UseNestedSet
 
                 $query->update(
                     [
-                        $attribute => new Expression($attribute . '+ ' . $delta),
+                        $attribute => new Expression($this->quoteCol($attribute) . ' + ' . $delta),
                     ]
                 );
             }
@@ -694,7 +702,7 @@ trait UseNestedSet
                 ->update(
                     [
                         (string)$this->levelAttribute() => new Expression(
-                            "-{$this->levelAttribute()} + " . $depth
+                            '-' . $this->quoteCol((string)$this->levelAttribute()) . ' + ' . $depth
                         ),
                     ]
                 );
@@ -715,12 +723,14 @@ trait UseNestedSet
                 ->update(
                     [
                         (string)$this->leftAttribute()  => new Expression(
-                            $this->leftAttribute() . ' + ' . $delta
+                            $this->quoteCol((string)$this->leftAttribute()) . ' + ' . $delta
                         ),
                         (string)$this->rightAttribute() => new Expression(
-                            $this->rightAttribute() . ' + ' . $delta
+                            $this->quoteCol((string)$this->rightAttribute()) . ' + ' . $delta
                         ),
-                        (string)$this->levelAttribute() => new Expression("-{$this->levelAttribute()}"),
+                        (string)$this->levelAttribute() => new Expression(
+                            '-' . $this->quoteCol((string)$this->levelAttribute())
+                        ),
                     ]
                 );
         } else {
@@ -736,13 +746,13 @@ trait UseNestedSet
                 ->update(
                     [
                         (string)$this->leftAttribute()  => new Expression(
-                            $this->leftAttribute() . ' + ' . $deltaMove
+                            $this->quoteCol((string)$this->leftAttribute()) . ' + ' . $deltaMove
                         ),
                         (string)$this->rightAttribute() => new Expression(
-                            $this->rightAttribute() . ' + ' . $deltaMove
+                            $this->quoteCol((string)$this->rightAttribute()) . ' + ' . $deltaMove
                         ),
                         (string)$this->levelAttribute() => new Expression(
-                            $this->levelAttribute() . ' + ' . -$depth
+                            $this->quoteCol((string)$this->levelAttribute()) . ' + ' . -$depth
                         ),
                         (string)$this->treeAttribute()  => $tree,
                     ]
@@ -769,13 +779,13 @@ trait UseNestedSet
             ->update(
                 [
                     (string)$this->leftAttribute()  => new Expression(
-                        $this->leftAttribute() . ' + ' . (1 - $left)
+                        $this->quoteCol((string)$this->leftAttribute()) . ' + ' . (1 - $left)
                     ),
                     (string)$this->rightAttribute() => new Expression(
-                        $this->rightAttribute() . ' + ' . (1 - $left)
+                        $this->quoteCol((string)$this->rightAttribute()) . ' + ' . (1 - $left)
                     ),
                     (string)$this->levelAttribute() => new Expression(
-                        $this->levelAttribute() . ' + ' . -$depth
+                        $this->quoteCol((string)$this->levelAttribute()) . ' + ' . -$depth
                     ),
                     (string)$this->treeAttribute()  => $tree,
                 ]
@@ -792,9 +802,9 @@ trait UseNestedSet
         $this->descendantsQuery()
             ->update(
                 [
-                    (string)$this->leftAttribute()  => new Expression($this->leftAttribute() . '- 1'),
-                    (string)$this->rightAttribute() => new Expression($this->rightAttribute() . '- 1'),
-                    (string)$this->levelAttribute() => new Expression($this->levelAttribute() . '- 1'),
+                    (string)$this->leftAttribute()  => new Expression($this->quoteCol((string)$this->leftAttribute()) . ' - 1'),
+                    (string)$this->rightAttribute() => new Expression($this->quoteCol((string)$this->rightAttribute()) . ' - 1'),
+                    (string)$this->levelAttribute() => new Expression($this->quoteCol((string)$this->levelAttribute()) . ' - 1'),
                 ]
             );
 
